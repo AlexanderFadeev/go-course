@@ -22,7 +22,7 @@ func logMiddleware(h http.Handler) http.Handler {
 				"method":     r.Method,
 				"url":        r.RequestURI,
 				"remoteAddr": r.RemoteAddr,
-				"userAger":   r.UserAgent(),
+				"userAgent":  r.UserAgent(),
 			}).Info("New request")
 			h.ServeHTTP(w, r)
 		},
