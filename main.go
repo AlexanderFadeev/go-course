@@ -1,14 +1,15 @@
 package main
 
 import (
-	"net/http"
-	"github.com/AlexanderFadeev/go-course/handlers"
-	"os"
+	"context"
 	"io"
-	log "github.com/sirupsen/logrus"
+	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
-	"context"
+
+	"github.com/AlexanderFadeev/go-course/handlers"
+	log "github.com/sirupsen/logrus"
 )
 
 const defaultLogFile = "log.log"
@@ -55,8 +56,7 @@ func getKillSignalChan() chan os.Signal {
 }
 
 func waitKillSignalChan(killSignalChan <-chan os.Signal) {
-	signal := <-killSignalChan
-	switch signal {
+	switch <-killSignalChan {
 	case os.Interrupt:
 		log.Info("got SIGINT")
 	case syscall.SIGTERM:

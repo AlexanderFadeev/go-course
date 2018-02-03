@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"github.com/gorilla/mux"
 	"net/http"
+
+	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
 
