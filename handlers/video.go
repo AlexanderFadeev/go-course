@@ -45,7 +45,7 @@ func getVideoInfo(id string) (*videoInfo, error) {
 			URL:       "/content/hjkhhjk3-23j4-j45k-erkj-kj3k4jl2k345/index.mp4",
 		}, nil
 	default:
-		return nil, errors.Errorf("Unknown video info %s", id)
+		return nil, errors.Errorf("Unknown video id %s", id)
 	}
 
 }

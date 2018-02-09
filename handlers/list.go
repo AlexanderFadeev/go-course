@@ -16,29 +16,30 @@ type videoListItem struct {
 	Thumbnail string `json:"thumbnail"`
 }
 
-var videolist []videoListItem = []videoListItem{
-	{
-		ID:        "d290f1ee-6c54-4b01-90e6-d701748f0851",
-		Name:      "Black Retrospetive Woman",
-		Duration:  15,
-		Thumbnail: "/content/d290f1ee-6c54-4b01-90e6-d701748f0851/screen.jpg",
-	},
-	{
-		ID:        "sldjfl34-dfgj-523k-jk34-5jk3j45klj34",
-		Name:      "Go Rally TEASER-HD",
-		Duration:  41,
-		Thumbnail: "/content/sldjfl34-dfgj-523k-jk34-5jk3j45klj34/screen.jpg",
-	},
-	{
-		ID:        "hjkhhjk3-23j4-j45k-erkj-kj3k4jl2k345",
-		Name:      "Танцор",
-		Duration:  92,
-		Thumbnail: "/content/hjkhhjk3-23j4-j45k-erkj-kj3k4jl2k345/screen.jpg",
-	},
-}
 
 func list(w http.ResponseWriter, _ *http.Request) {
-	bytes, err := json.Marshal(videolist)
+	items := []videoListItem{
+		{
+			ID:        "d290f1ee-6c54-4b01-90e6-d701748f0851",
+			Name:      "Black Retrospetive Woman",
+			Duration:  15,
+			Thumbnail: "/content/d290f1ee-6c54-4b01-90e6-d701748f0851/screen.jpg",
+		},
+		{
+			ID:        "sldjfl34-dfgj-523k-jk34-5jk3j45klj34",
+			Name:      "Go Rally TEASER-HD",
+			Duration:  41,
+			Thumbnail: "/content/sldjfl34-dfgj-523k-jk34-5jk3j45klj34/screen.jpg",
+		},
+		{
+			ID:        "hjkhhjk3-23j4-j45k-erkj-kj3k4jl2k345",
+			Name:      "Танцор",
+			Duration:  92,
+			Thumbnail: "/content/hjkhhjk3-23j4-j45k-erkj-kj3k4jl2k345/screen.jpg",
+		},
+	}
+
+	bytes, err := json.Marshal(items)
 	if err != nil {
 		err = errors.Wrap(err, "Failed to unmarshal to JSON")
 		log.Error(err)
