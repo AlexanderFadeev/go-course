@@ -57,13 +57,13 @@ func video(w http.ResponseWriter, r *http.Request) {
 	videoInfo, err := getVideoInfo(id)
 	if err != nil {
 		err = errors.Wrap(err, "Failed to unmarshal to JSON")
-		log.Error(err)
+		log.Panic(err)
 	}
 
 	bytes, err := json.Marshal(videoInfo)
 	if err != nil {
 		err = errors.Wrap(err, "Failed to get video info")
-		log.Error(err)
+		log.Panic(err)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

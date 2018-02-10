@@ -16,7 +16,6 @@ type videoListItem struct {
 	Thumbnail string `json:"thumbnail"`
 }
 
-
 func list(w http.ResponseWriter, _ *http.Request) {
 	items := []videoListItem{
 		{
@@ -42,7 +41,7 @@ func list(w http.ResponseWriter, _ *http.Request) {
 	bytes, err := json.Marshal(items)
 	if err != nil {
 		err = errors.Wrap(err, "Failed to unmarshal to JSON")
-		log.Error(err)
+		log.Panic(err)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -51,6 +50,6 @@ func list(w http.ResponseWriter, _ *http.Request) {
 	_, err = io.WriteString(w, string(bytes))
 	if err != nil {
 		err = errors.Wrap(err, "Failed to write")
-		log.Error(err)
+		log.Panic(err)
 	}
 }
