@@ -1,48 +1,31 @@
 package handlers
 
 import (
-	"database/sql"
 	"net/http"
 
+	"github.com/AlexanderFadeev/go-course/database"
 	"github.com/AlexanderFadeev/go-course/uploader"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	"github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
 
 type Router struct {
-	impl      *mux.Router
-	db        *sql.DB
-	staticDir string
+	*mux.Router
 }
 
-func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	r.impl.ServeHTTP(w, req)
-}
-
-func (r *Router) HandleFunc(path string, handler http.HandlerFunc) *mux.Route {
-	return r.impl.HandleFunc(path, handler)
-}
-
-func NewRouter(staticDir string, uploader uploader.Uploader) http.Handler {
-	db, err := sql.Open("mysql", `root:1234@/video`)
-	if err != nil {
-		err = errors.Wrap(err, "Failed to open sql database")
-		log.Panic(err)
-	}
-
+func NewRouter(db database.DB, uploader uploader.Uploader) http.Handler {
 	muxRouter := mux.NewRouter()
 	r := Router{
-		impl:      muxRouter,
-		db:        db,
-		staticDir: staticDir,
+		Router: muxRouter,
 	}
 
 	s := muxRouter.PathPrefix("/api/v1").Subrouter()
-	s.HandleFunc("/list", r.list).Methods(http.MethodGet)
-	s.HandleFunc("/video/{ID}", r.video).Methods(http.MethodGet)
-	s.HandleFunc("/video", r.postVideo(uploader)).Methods(http.MethodPost)
+	s.HandleFunc("/list", list(db)).Methods(http.MethodGet)
+	s.HandleFunc("/video/{ID}", video(db)).Methods(http.MethodGet)
+	s.HandleFunc("/video", postVideo(db, uploader)).Methods(http.MethodPost)
 
 	return logMiddleware(&r)
 }
@@ -59,4 +42,13 @@ func logMiddleware(h http.Handler) http.Handler {
 			h.ServeHTTP(w, r)
 		},
 	)
+}
+
+func generateUUID() (*string, error) {
+	idStruct, err := uuid.NewV4()
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to generate key")
+	}
+	id := idStruct.String()
+	return &id, nil
 }

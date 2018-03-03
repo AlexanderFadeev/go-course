@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/AlexanderFadeev/go-course/database"
 	"github.com/AlexanderFadeev/go-course/uploader"
 	"github.com/pkg/errors"
-	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 )
 
-func (r *Router) postVideo(uploader uploader.Uploader) http.HandlerFunc {
+func postVideo(db database.DB, uploader uploader.Uploader) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		const key = "file[]"
 		srcFile, fileHeader, err := req.FormFile(key)
@@ -33,36 +33,25 @@ func (r *Router) postVideo(uploader uploader.Uploader) http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest)
 		}
 
-		videoKey, err := uuid.NewV4()
+		id, err := generateUUID()
 		if err != nil {
-			err = errors.Wrap(err, "Failed to generate key")
+			err = errors.Wrap(err, "Failed to generate video ID")
 			logrus.Panic(err)
 		}
-		const defaultTitle = "Title"
-		const defaultStatus = 3
-		const defaultDuration = 42
 
-		url := fmt.Sprintf("/content/%s/index.mp4", videoKey)
-		thumbnailURL := "/default_thumbnail.jpg"
+		url := fmt.Sprintf("/content/%s/index.mp4", *id)
 
-		q := `
-		INSERT INTO video SET
-		video_key = ?,
-		title = ?,
-		status = ?,
-		duration = ?,
-		url = ?,
-		thumbnail_url = ?
-		`
+		video := database.Video{
+			ID:   *id,
+			URL:  url,
+			Name: filename,
+		}
 
-		r.db.Query(q,
-			videoKey,
-			defaultTitle,
-			defaultStatus,
-			defaultDuration,
-			url,
-			thumbnailURL,
-		)
+		err = db.AddVideo(&video)
+		if err != nil {
+			err = errors.Wrap(err, "Failed to add video to database")
+			logrus.Panic(err)
+		}
 
 		err = uploader.Upload(srcFile, url)
 		if err != nil {

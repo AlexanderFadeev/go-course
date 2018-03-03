@@ -8,8 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/AlexanderFadeev/go-course/database"
 	"github.com/AlexanderFadeev/go-course/handlers"
 	"github.com/AlexanderFadeev/go-course/uploader"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -33,15 +35,23 @@ func main() {
 		"url": address,
 	}).Info("Starting the server")
 
-	server := startServer(address, defaultStaticDir)
+	server, err := startServer(address, defaultStaticDir)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	waitKillSignalChan(killSignalChan)
 	server.Shutdown(context.Background())
 }
 
-func startServer(address, staticDir string) *http.Server {
+func startServer(address, staticDir string) (*http.Server, error) {
+	db, err := database.New("root", "1234", "video")
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to connect to the database")
+	}
+
 	fileUploader := uploader.New(staticDir)
-	router := handlers.NewRouter(staticDir, fileUploader)
+	router := handlers.NewRouter(db, fileUploader)
 	server := http.Server{
 		Addr:    address,
 		Handler: router,
@@ -49,7 +59,7 @@ func startServer(address, staticDir string) *http.Server {
 	go func() {
 		log.Fatal(http.ListenAndServe(address, router))
 	}()
-	return &server
+	return &server, nil
 }
 
 func getKillSignalChan() chan os.Signal {
