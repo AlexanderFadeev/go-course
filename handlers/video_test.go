@@ -6,15 +6,27 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"path"
+
+	"github.com/AlexanderFadeev/go-course/database"
 )
 
 func TestVideo(t *testing.T) {
-	w := httptest.NewRecorder()
-	const target = "/api/v1/video/d290f1ee-6c54-4b01-90e6-d701748f0851"
-	req := httptest.NewRequest(http.MethodGet, target, nil)
+	db, err := database.New("root", "1234", "video")
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	router := Router()
-	router.ServeHTTP(w, req)
+	videos, err := db.GetList()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	target := path.Join("/api/v1/", videos[0].URL)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, target, nil)
+	video(db)(w, r)
 
 	response := w.Result()
 	if response.StatusCode != http.StatusOK {
@@ -27,8 +39,8 @@ func TestVideo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	info := videoInfo{}
-	err = json.Unmarshal(jsonData, &info)
+	var video database.Video
+	err = json.Unmarshal(jsonData, &video)
 	if err != nil {
 		t.Errorf("Failed to unmarshal JSON data: %v", err)
 	}
