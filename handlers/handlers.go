@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/AlexanderFadeev/go-course/uploader"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -24,7 +25,7 @@ func (r *Router) HandleFunc(path string, handler http.HandlerFunc) *mux.Route {
 	return r.impl.HandleFunc(path, handler)
 }
 
-func NewRouter(staticDir string) http.Handler {
+func NewRouter(staticDir string, uploader uploader.Uploader) http.Handler {
 	db, err := sql.Open("mysql", `root:1234@/video`)
 	if err != nil {
 		err = errors.Wrap(err, "Failed to open sql database")
@@ -41,7 +42,7 @@ func NewRouter(staticDir string) http.Handler {
 	s := muxRouter.PathPrefix("/api/v1").Subrouter()
 	s.HandleFunc("/list", r.list).Methods(http.MethodGet)
 	s.HandleFunc("/video/{ID}", r.video).Methods(http.MethodGet)
-	s.HandleFunc("/video", r.postVideo).Methods(http.MethodPost)
+	s.HandleFunc("/video", r.postVideo(uploader)).Methods(http.MethodPost)
 
 	return logMiddleware(&r)
 }

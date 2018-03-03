@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/AlexanderFadeev/go-course/handlers"
+	"github.com/AlexanderFadeev/go-course/uploader"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -39,7 +40,8 @@ func main() {
 }
 
 func startServer(address, staticDir string) *http.Server {
-	router := handlers.NewRouter(staticDir)
+	fileUploader := uploader.New(staticDir)
+	router := handlers.NewRouter(staticDir, fileUploader)
 	server := http.Server{
 		Addr:    address,
 		Handler: router,
