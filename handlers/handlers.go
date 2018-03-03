@@ -1,14 +1,13 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
 
-	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
-	"database/sql"
-	"github.com/pkg/errors"
-
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 type Router struct {

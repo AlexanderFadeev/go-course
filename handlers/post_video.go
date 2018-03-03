@@ -1,14 +1,15 @@
 package handlers
 
 import (
-	"net/http"
-	"github.com/sirupsen/logrus"
-	"github.com/pkg/errors"
-	"github.com/satori/go.uuid"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path"
-	"io"
+
+	"github.com/pkg/errors"
+	"github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 )
 
 func (r *Router) postVideo(w http.ResponseWriter, req *http.Request) {
