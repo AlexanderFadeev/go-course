@@ -5,16 +5,46 @@ import (
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"database/sql"
+	"github.com/pkg/errors"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
-func Router() http.Handler {
-	r := mux.NewRouter()
-	s := r.PathPrefix("/api/v1").Subrouter()
-	s.HandleFunc("/list", list).Methods(http.MethodGet)
-	s.HandleFunc("/video/{ID}", video).Methods(http.MethodGet)
-	s.HandleFunc("/video", postVideo).Methods(http.MethodPost)
+type Router struct {
+	impl      *mux.Router
+	db        *sql.DB
+	staticDir string
+}
 
-	return logMiddleware(r)
+func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	r.impl.ServeHTTP(w, req)
+}
+
+func (r *Router) HandleFunc(path string, handler http.HandlerFunc) *mux.Route {
+	return r.impl.HandleFunc(path, handler)
+}
+
+func NewRouter(staticDir string) http.Handler {
+	db, err := sql.Open("mysql", `root:1234@/video`)
+	if err != nil {
+		err = errors.Wrap(err, "Failed to open sql database")
+		log.Panic(err)
+	}
+
+	muxRouter := mux.NewRouter()
+	r := Router{
+		impl:      muxRouter,
+		db:        db,
+		staticDir: staticDir,
+	}
+
+	s := muxRouter.PathPrefix("/api/v1").Subrouter()
+	s.HandleFunc("/list", r.list).Methods(http.MethodGet)
+	s.HandleFunc("/video/{ID}", r.video).Methods(http.MethodGet)
+	s.HandleFunc("/video", r.postVideo).Methods(http.MethodPost)
+
+	return logMiddleware(&r)
 }
 
 func logMiddleware(h http.Handler) http.Handler {

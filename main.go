@@ -13,6 +13,7 @@ import (
 )
 
 const defaultLogFile = "log.log"
+const defaultStaticDir = "/home/alexander/Programming/Go/src/github.com/AlexanderFadeev/go-course/static"
 
 func main() {
 	logFile, err := os.OpenFile(defaultLogFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
@@ -31,14 +32,14 @@ func main() {
 		"url": address,
 	}).Info("Starting the server")
 
-	server := startServer(address)
+	server := startServer(address, defaultStaticDir)
 
 	waitKillSignalChan(killSignalChan)
 	server.Shutdown(context.Background())
 }
 
-func startServer(address string) *http.Server {
-	router := handlers.Router()
+func startServer(address, staticDir string) *http.Server {
+	router := handlers.NewRouter(staticDir)
 	server := http.Server{
 		Addr:    address,
 		Handler: router,
